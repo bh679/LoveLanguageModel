@@ -1,0 +1,483 @@
+<!DOCTYPE html>
+<html data-wf-domain="">
+    <head>
+        <!-- Google tag (gtag.js) -->
+        <script async src="https://www.googletagmanager.com/gtag/js?id=G-MQZDR08H6Z"></script>
+        <script>
+          window.dataLayer = window.dataLayer || [];
+          function gtag(){dataLayer.push(arguments);}
+          gtag('js', new Date());
+
+          gtag('config', 'G-MQZDR08H6Z');
+        </script>
+
+        <!-- Speech SDK reference sdk. -->
+        <script
+            src="https://cdn.jsdelivr.net/npm/microsoft-cognitiveservices-speech-sdk@latest/distrib/browser/microsoft.cognitiveservices.speech.sdk.bundle-min.js">
+        </script>
+
+        <script src="./js/courtroomChat.js"></script>
+        <script src="./modules/recorder/recorder.js"></script>
+        <script src="./modules/NodeJSON/NodeJSON.js"></script>
+        <script src="./js/AskGPTClient.js"></script>
+        <script src="./js/API/ElevenLabsClient.js"></script>
+        <script src="./js/API/MicrosoftCognitiveServicesTextToSpeech.js"></script>
+        <script src="./js/icons.js"></script>
+        <script src="./js/LanguageOptions.js"></script>
+        <script src="./js/LanguageManager.js"></script>
+        <script src="./js/GalleryLookUp.js"></script>
+        <script src="./js/GalleryDataManager.js"></script>
+        <script src="./js/GalleryManager.js"></script>
+        <script src="./js/MindfulAIApp.js"></script>
+
+        <link rel="stylesheet" type="text/css" href="./css/courtroomChat.css">
+        <link rel="stylesheet" type="text/css" href="./css/mindfulai.css">
+        <link rel="stylesheet" type="text/css" href="./css/bootstrap.min.css">
+        <link rel="stylesheet" type="text/css" href="./modules/recorder/micVis.css">
+
+        <!-- Scales UI for mobile -->
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+
+    </head>
+    <body class="body">
+
+        <!-- Bookstrap -->
+        <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js" integrity="sha384-geWF76RCwLtnZ8qwWowPQNguL3RmwHVBC9FhGdlKrxdiJJigb/j/68SIy3Te4Bkz" crossorigin="anonymous"></script>
+
+        <div id="background">
+            <!-- This div will serve as your background. -->
+        </div>
+
+
+        <div class="d-flex flex-column vh-100">
+
+
+            <!-- All your other content goes here, if any -->
+
+
+            <!-- Divs to display the status message and the transcription -->
+            <div id="statusMessage"></div>
+            <div id="transcription"></div>
+
+            <div class="flex-grow-1 d-flex flex-column-reverse">
+                <div id="chat" style="padding: 10px"></div>
+
+
+                <!--div class="wave-container" hidden>
+                    <div class="wave"></div>
+                </div>
+                <script src="./modules/recorder/micVis.js"></script-->
+
+            </div>
+
+            <div class="row bg-primary" style="--bs-gutter-x: 0rem;">
+                <div class="row" style="padding: 20px;">
+                    <div class="col-3 d-flex justify-content-center">
+                        <button id="previousButton" class="btn" onclick="chat.Reset(); app.Previous(); Intro(2);" style="color:white">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" fill="currentColor" class="bi bi-arrow-left-square-fill" viewBox="0 0 16 16">
+                              <path d="M16 14a2 2 0 0 1-2 2H2a2 2 0 0 1-2-2V2a2 2 0 0 1 2-2h12a2 2 0 0 1 2 2v12zm-4.5-6.5H5.707l2.147-2.146a.5.5 0 1 0-.708-.708l-3 3a.5.5 0 0 0 0 .708l3 3a.5.5 0 0 0 .708-.708L5.707 8.5H11.5a.5.5 0 0 0 0-1z"/>
+                            </svg>
+                        </button>
+                    </div>
+                    <!-- Button to start and stop recording -->
+                    <button id="recordButton" class="btn btn-success col-6">
+                        <div id="recordButtonIcon">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-mic" viewBox="0 0 16 16" id="mic-empty">
+                              <path d="M3.5 6.5A.5.5 0 0 1 4 7v1a4 4 0 0 0 8 0V7a.5.5 0 0 1 1 0v1a5 5 0 0 1-4.5 4.975V15h3a.5.5 0 0 1 0 1h-7a.5.5 0 0 1 0-1h3v-2.025A5 5 0 0 1 3 8V7a.5.5 0 0 1 .5-.5z"/>
+                              <path d="M10 8a2 2 0 1 1-4 0V3a2 2 0 1 1 4 0v5zM8 0a3 3 0 0 0-3 3v5a3 3 0 0 0 6 0V3a3 3 0 0 0-3-3z"/>
+                            </svg>
+                        </div>
+                        <div id="recordButtonTxt"></div>
+                    </button>
+                    <div class="col-3 d-flex justify-content-center" >
+                        <button id="nextButton" class="btn" onclick="chat.Reset(); app.Next(); Intro(2);" style="color:white">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" fill="currentColor" class="bi bi-arrow-right-square-fill" viewBox="0 0 16 16">
+                              <path d="M0 14a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V2a2 2 0 0 0-2-2H2a2 2 0 0 0-2 2v12zm4.5-6.5h5.793L8.146 5.354a.5.5 0 1 1 .708-.708l3 3a.5.5 0 0 1 0 .708l-3 3a.5.5 0 0 1-.708-.708L10.293 8.5H4.5a.5.5 0 0 1 0-1z"/>
+                            </svg>
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <nav class="navbar navbar-expand-lg bg-primary" data-bs-theme="dark">
+              <div class="container-fluid">
+                <a class="navbar-brand" href="#">MindfulAI</a>
+                <div>
+                    <button id="LanguageIconButton" class="navbar-toggler">
+                    </button>
+                    <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarColor01" aria-controls="navbarColor01" aria-expanded="false" aria-label="Toggle navigation">
+                      <span class="navbar-toggler-icon"></span>
+                    </button>
+                </div>
+                <div class="collapse navbar-collapse" id="navbarColor01">
+                  <ul class="navbar-nav me-auto">
+                    <li class="nav-item">
+                      <a class="nav-link active" href="#"><div id="appTxt"></div>
+                        <span class="visually-hidden">(current)</span>
+                      </a>
+                    </li>
+                    <li class="nav-item">
+                      <a class="nav-link" href="#">
+                     </a>
+                    </li>
+                    <li class="nav-item">
+                      <a class="nav-link" href="https://docs.google.com/forms/d/e/1FAIpQLSf5Zncv3pICRPwujVUC8VkFwvU9IteuLmS9a56AdQii3JyFWQ/viewform?usp=sf_link"><div id="feedbackTxt"></div></a>
+                    </li>
+                    <li class="nav-item">
+                      <a class="nav-link" href="https://mindfulai.equalreality.com/ai-powered-artists/"><div id="aboutTxt"></div></a>
+                    </li>
+                    <li class="nav-item dropdown">
+                      <a class="nav-link dropdown-toggle" id="languageHeading" data-bs-toggle="dropdown" href="#" role="button" aria-haspopup="true" aria-expanded="false"><div id="languageTxt">Language</div></a>
+                      <div class="dropdown-menu" id="languageDropdown">
+                        <a class="dropdown-item" href="#">Taiwanese Chinese</a>
+                        <a class="dropdown-item" href="#">English</a>
+                        <div class="dropdown-divider"></div>
+                        <a class="dropdown-item" href="#">Something else here</a>
+                        <a class="dropdown-item" href="#">Separated link</a>
+                      </div>
+                    </li>
+                  </ul>
+                  <!--form class="d-flex">
+                    <input class="form-control me-sm-2" type="search" placeholder="Search">
+                    <button class="btn btn-secondary my-2 my-sm-0" type="submit">Search</button>
+                  </form-->
+                </div>
+              </div>
+            </nav>
+        </div>
+</div>
+
+        
+
+        <!-- Add Bootstrap JS and Popper.js -->
+        <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.16.0/umd/popper.min.js"></script>
+        <script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
+
+        <script>
+
+            //Element references
+            const chatDiv = document.getElementById('chat');
+
+            const recordButton = {};
+            recordButton.button = document.getElementById('recordButton');
+            recordButton.text = document.getElementById('recordButtonTxt');
+            recordButton.icon = document.getElementById('recordButtonIcon');
+            const statusMessage = document.getElementById('statusMessage');
+            const transcriptionDiv = document.getElementById('transcription');
+            const languageHeadingDropdown = document.getElementById('languageHeading');
+            const languageDropdown = document.getElementById('languageDropdown');
+            const LanguageIconButton = document.getElementById('LanguageIconButton');
+
+
+            //Mindful AI
+            // To start the app
+            const app = new MindfulAIApp();
+
+            // Usage:
+            const url = "./GallerysData.json";
+            const gallerysDataFetcher = new DataFetcher(url);
+
+
+            var languageManager = new LanguageManager(languageDropdown, languageHeadingDropdown); 
+            app.languageManager = languageManager;
+
+            // Create a new Recorder object
+            const recorder = new Recorder(statusMessage);
+
+            //Chat UI
+            const chat = new MessageUI(chatDiv);
+
+            var User = {};
+            User.name = "You";
+            User.role = "";
+            User.class = "";
+            //ArtGPT.voiceId = '21m00Tcm4TlvDq8ikWAM';
+            User.profileUrl = "";
+
+            var ArtGPT = {};
+            ArtGPT.name = "";
+            ArtGPT.role = "GPT";
+            ArtGPT.class = "";
+            //ArtGPT.voiceId = '21m00Tcm4TlvDq8ikWAM';
+            ArtGPT.profileUrl = "";
+
+            async function Intro(delayTime)
+            {
+                chat.Reset();
+                SetArtGPT();
+
+                await delay(delayTime*1000);
+                chat.AddMessage(ArtGPT, "Hi! I am " + ArtGPT.name+".");
+                adjustMessageOpacity(); 
+                await delay(1000);
+
+                chat.AddMessage(ArtGPT, "Ask me anything!");
+                adjustMessageOpacity(); 
+                await delay(1000);
+
+                chat.AddMessage(ArtGPT, "You can ask me about what I am, my meaning or my purpose.");
+                adjustMessageOpacity(); 
+            }
+
+            function SetArtGPT()
+            {
+                ArtGPT.name = app.currentPainting.title;
+            }
+
+            //https://chat.openai.com/share/ca60ea94-5709-4675-8563-96d220fa6b52
+            window.onload = function() {
+
+                gallerysDataFetcher.fetchData().then(async () => {
+                    console.log("$$$$$$$$$$");
+                    const galGata = gallerysDataFetcher.getDataById();
+                    console.log(galGata);  // Log the data for id "1"
+                    if(galGata != null)
+                        app.dataURL = galGata.url;
+                    await app.Start();
+
+                    Intro(5);
+                });
+
+                LanguageIconButton.innerHTML = globe2_30x30;
+
+                // When the record button is clicked
+                recordButton.button.onclick = function() {
+                    RecordToText();
+                    app.speechManager.buttonPressHandler();
+                };
+
+                async function RecordToText() {
+
+                    recordButton.text.innerText = languageManager.phrases.stoprecording.currentValue;
+                    recordButton.icon.innerHTML = micFill;// + recordButtonTxt.outerHTML;
+                    recordButton.button.classList.remove("btn-success");
+                    recordButton.button.classList.add("btn-warning");
+                    micEmpty.hidden = true;
+                    micFill.hidden = false;
+                    app.speechManager.StopSpeaking();
+
+                    //start/stop reocrding
+                    recorder.toggleRecording(FinishRecording);
+                    
+                }
+
+                async function FinishRecording(recordingChunk)
+                {
+                    //update button
+                    recordButton.button.disabled = true;
+                    recordButton.text.innerText = languageManager.phrases.processing.currentValue;
+                    recordButton.icon.innerHTML = micFill;// + recordButtonTxt.outerHTML;
+                    recordButton.button.classList.remove("btn-warning");
+                    recordButton.button.classList.add("btn-secondary");
+                    app.speechManager.voicing = true;
+
+                    //transcribe results
+                    var transcript = await transcribe(recordingChunk);
+                    recordButton.text.innerText = languageManager.phrases.responding.currentValue;
+                    recordButton.icon.innerHTML = micFill;// + recordButtonTxt.outerHTML;
+
+                    //save transcription
+                    transcriptionDiv.innerHtml = transcript;
+
+                    chat.AddMessage(User,transcript);
+                    adjustMessageOpacity();
+
+                    await app.UserTalk(transcript, GPTResponse, FinishedSpeaking);
+
+                    recordButton.text.innerText = languageManager.phrases.speaking.currentValue;
+                    recordButton.icon.innerHTML = micFill;// + recordButtonTxt.outerHTML;
+                    recordButton.button.disabled = false;
+                }
+
+                function GPTResponse(response)
+                {
+                    SetArtGPT();
+
+                    chat.AddMessage(ArtGPT,response);
+                    adjustMessageOpacity();
+                }
+
+                function FinishedSpeaking()
+                {
+                    recordButton.text.innerText = languageManager.phrases.startrecording.currentValue;
+                    recordButton.icon.innerHTML = micFill;// + recordButtonTxt.outerHTML;
+                    recordButton.button.classList.remove("btn-secondary");
+                    recordButton.button.classList.add("btn-success");
+                }
+
+                const apiDomain = 'https://mindfulai.equalreality.com:3000';
+
+                // Define the transcribe function, which sends audio chunks to the Whisper API and fetches the transcription
+                async function transcribe(chunk) {
+                    // Log the chunks data to the console for debugging purposes
+                    console.log(chunk);
+
+                    // Create a new Blob object from the first chunk (which should contain the audio data)
+                    const audioData = new Blob([chunk], { type: 'audio/webm' });
+
+                    // Create a new FormData object
+                    const formData = new FormData();
+
+                    // Append the Blob object to the FormData object under the key 'file'
+                    formData.append('file', audioData, 'audio.wav');
+
+                    // Append the language prompt to the FormData
+                    formData.append('languagePrompt', "Hello, Im speaking in "+app.languageManager.currentLanguage.currentValue);
+
+                    // Send a POST request to the Whisper API with the FormData object in the body
+                    const response = await fetch(apiDomain + '/Transcribe', {
+                        method: 'POST',
+                        body: formData
+                    });
+
+                    // If the response status is not OK (200), throw an error with the status
+                    if (!response.ok) {
+                        throw new Error(`HTTP error! status: ${response.status}`);
+                    }
+
+                    // Parse the response body as JSON
+                    const data = await response.json();
+
+                    // If the transcription is still processing, throw an error
+                    if (data.message === 'Transcription is still processing') {
+                        throw new Error('Transcription is still processing');
+                    }
+
+                    // If there was an error during transcription, throw an error with the error message
+                    if (data.error) {
+                        throw new Error(data.error);
+                    }
+
+                    // Log the transcription to the console for debugging purposes
+                    console.log(`Transcription: ${data.transcription}`);
+
+                    // Return the transcription
+                    return data.transcription;
+                }
+
+
+                // Check server status on page load
+                    checkServerStatus();
+
+                    async function checkServerStatus() {
+                        try {
+                            const response = await fetch(apiDomain + '/ping');
+                            const data = await response.json();
+                            
+                            if (data.status === 'Server is running!') {
+                                console.log("Server is up and running");
+                                // Optionally, you can display a message or change some UI element to show server status.
+                            }
+                        } catch (error) {
+                            console.error("Server seems to be down:", error);
+                            // Here, you can also display a warning to the user about the server being down or handle it in another appropriate way.
+                        }
+                    }
+
+            };
+
+            //////////////////////
+            //Make things scroll
+            //////////////////////
+
+            function adjustChatHeight() {
+                // Get heights of both parts of the footer
+                const providedSectionHeight = document.querySelector('.row.bg-primary').offsetHeight;
+                const navbarFooterHeight = document.querySelector('.navbar.bg-primary').offsetHeight;
+                
+                // Calculate chat's max-height
+                const chatMaxHeight = window.innerHeight - providedSectionHeight - navbarFooterHeight;
+                
+                // Apply max-height to chat
+                //const chatBox = document.getElementById('chat');
+                chatDiv.style.maxHeight = chatMaxHeight + "px";
+            }
+
+            // Call the function initially
+            adjustChatHeight();
+
+            // Call the function whenever the window is resized
+            window.addEventListener('resize', adjustChatHeight);
+
+
+            //////////////////////
+            //Change Opacity
+            //////////////////////
+            
+            function adjustMessageOpacity() {
+                // const chatBox = chatDiv;
+                const messages = chatDiv.querySelectorAll('.message');
+                const chatBottom = chatDiv.getBoundingClientRect().bottom;
+
+                messages.forEach(message => {
+                    // Calculate distance of the message's bottom from the chatBox's bottom
+                    const distanceFromBottom = chatBottom - message.getBoundingClientRect().bottom;
+
+                    // Calculate opacity based on distance from bottom
+                    // Messages very close to the bottom have low opacity, while those farther away have full opacity.
+                    const opacity = 1 - Math.min(1, distanceFromBottom / 500); // "200" is a factor you can adjust for desired fade effect
+
+                    console.log(opacity);
+
+                    // Apply the opacity to the message
+                    message.style.opacity = opacity;
+                });
+            }
+
+            // Call the function initially
+            adjustMessageOpacity();
+
+            // Attach the function to the scroll event of the chat box
+            chatDiv.addEventListener('scroll', adjustMessageOpacity);
+
+
+
+
+
+            $(document).ready(function() {
+                // Cache DOM elements for better performance
+                var navbarMenu = $('#navbarColor01');
+                var navbarToggler = $('.navbar-toggler');
+                var languageDropdown = $('#languageDropdown');
+                var languageToggler = $('#languageHeading');
+                var shortcutButton = $('#LanguageIconButton');
+
+                shortcutButton.click(function() {
+                    // Toggle the navbar
+                    if (!navbarMenu.hasClass('show')) {
+                        navbarMenu.addClass('show');
+                        navbarToggler.attr('aria-expanded', 'true');
+                    }
+
+                    // Open the language dropdown
+                    if (!languageDropdown.hasClass('show')) {
+                        languageDropdown.addClass('show');
+                        languageToggler.addClass('show').attr('aria-expanded', 'true');
+                    }
+                });
+
+                // Close the dropdown if clicked outside
+                $(document).click(function(event) {
+                    if (!$(event.target).closest(shortcutButton).length && 
+                        !$(event.target).closest(languageDropdown).length && 
+                        !$(event.target).closest(languageToggler).length) {
+                        
+                        if (languageDropdown.hasClass('show')) {
+                            languageDropdown.removeClass('show');
+                            languageToggler.removeClass('show').attr('aria-expanded', 'false');
+                            navbarMenu.removeClass('show');
+                            navbarToggler.attr('aria-expanded', 'false');
+                        }
+                    }
+                });
+            });
+
+
+            function delay(ms) {
+                return new Promise(resolve => setTimeout(resolve, ms));
+            }
+
+        </script>
+    </body>
+</html>
